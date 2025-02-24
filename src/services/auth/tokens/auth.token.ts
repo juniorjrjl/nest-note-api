@@ -1,0 +1,3 @@
+export const AUTH_SERVICE_TOKENS = {
+    SERVICE: Symbol('SERVICES.AUTH_SERVICE')
+}

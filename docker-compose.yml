@@ -1,0 +1,29 @@
+services:
+  api:
+    build:
+      context: .
+    ports:
+      - '3000:3000'
+    volumes:
+      - '.:/nest-note-api'
+    command: bash start.sh
+    depends_on:
+      - db
+    networks:
+      - nest-note-api-net
+  db:
+    image: 'mongo:8.0.4'
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: nest-note-api
+      MONGO_INITDB_ROOT_PASSWORD: nest-note-api
+      MONGO_INITDB_DATABASE: nest-note-api
+    networks:
+      - nest-note-api-net
+networks:
+  nest-note-api-net:
+    name: nest-note-api-net
+    external: true
+volumes:
+  db:

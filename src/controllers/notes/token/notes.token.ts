@@ -1,0 +1,3 @@
+export const NOTES_CONTROLLER_TOKENS = {
+    MAPPING: Symbol('CONTROLLER.NOTES_MAPPING')
+}
