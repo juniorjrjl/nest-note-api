@@ -22,7 +22,7 @@ export class AuthService implements IAuthService {
         try {
             const user = await this.queryService.findByEmail(email)
             const hashedPassword = await this.service.hashPassword(password)
-            if (await this.queryService.passwordIsMatch(hashedPassword, user.password)) {
+            if (!(await this.queryService.passwordIsMatch(hashedPassword, user.password))) {
                 throw exception;
             }
             return this.generateAccessToken({ email })
