@@ -1,6 +1,6 @@
 import { getModelToken } from "@nestjs/mongoose";
 import { Test, TestingModule } from "@nestjs/testing";
-import { Model, Query } from "mongoose";
+import { Model } from "mongoose";
 import { IUser, User, UserDocument } from "../../../../src/db/user.schema";
 import { UsersQueryService } from "../../../../src/services/users/impl/users-query.service";
 import { IUsersQueryService } from "../../../../src/services/users/iusers-query.service";
