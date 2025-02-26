@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post, Put, Query, Request } from '@nestjs/common';
 import { StatusCodes } from 'http-status-codes';
 import { NoteAuthorListResponse, NoteDetailResponse, NoteInsertedResponse, NoteInsertRequest, NoteUpdatedResponse, NoteUpdateRequest } from './notes-model';
 import { NOTES_SERVICE_TOKENS } from 'src/services/notes/token/notes.token';
@@ -24,8 +24,8 @@ export class NotesController {
     })
     @Post()
     @HttpCode(StatusCodes.CREATED)
-    public async insert(@Body() body: NoteInsertRequest): Promise<NoteInsertedResponse> {
-        const dto = await this.service.insert({ ...body, author: '678bbe6894c9c00d25dfc0a6' })
+    public async insert(@Request() request: Request, @Body() body: NoteInsertRequest): Promise<NoteInsertedResponse> {
+        const dto = await this.service.insert({ ...body, author: request['user'].id })
         return this.mapping.toNoteInsertedResponse(dto)
     }
 
@@ -64,8 +64,8 @@ export class NotesController {
         description: 'Filter notes by author',
         type: String,
     })
-    public async findByAuthorLikeText(@Query('query') query: string): Promise<NoteAuthorListResponse[]> {
-        const dto = await this.queryService.findByAuthorAndLikeText('678bbe6894c9c00d25dfc0a6', query)
+    public async findByAuthorLikeText(@Request() request: Request, @Query('query') query: string): Promise<NoteAuthorListResponse[]> {
+        const dto = await this.queryService.findByAuthorAndLikeText(request['user'].id, query)
         return this.mapping.toNoteAuthorListResponse(dto)
     }
 

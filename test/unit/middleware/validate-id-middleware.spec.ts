@@ -29,7 +29,7 @@ describe('validateIdMiddlewate', () => {
         let next: Partial<NextFunction> = () => { throw new Error('Invalid call') }
         expect(() => validateIdMiddleware.use(req as Request, res as Response, next as NextFunction))
             .toThrow(expect.objectContaining({
-                name: 'ConstraintViolationException',
+                message: 'A requisição contém erros',
                 fieldError: [new ConstraintInfo('id', ['informe um identificador válido'])]
             }))
     })

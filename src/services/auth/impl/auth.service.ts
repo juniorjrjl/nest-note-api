@@ -2,7 +2,6 @@ import { Inject, Injectable, NotFoundException, UnauthorizedException } from '@n
 import { JWTInfo, JWTTData } from '../auth-model';
 import { JwtService } from '@nestjs/jwt';
 import { IUsersQueryService } from '../../users/iusers-query.service';
-import { IUsersService } from '../../users/iusers.service';
 import { USERS_SERVICE_TOKENS } from '../../users/token/users.token';
 import { IAuthService } from '../iauth.service';
 import { ConfigService } from '@nestjs/config';
@@ -12,7 +11,6 @@ export class AuthService implements IAuthService {
 
     constructor(
         @Inject(USERS_SERVICE_TOKENS.QUERY_SERVICE) private readonly queryService: IUsersQueryService,
-        @Inject(USERS_SERVICE_TOKENS.SERVICE) private readonly service: IUsersService,
         private readonly jwtService: JwtService,
         private configService: ConfigService
     ) { }
@@ -21,11 +19,10 @@ export class AuthService implements IAuthService {
         const exception = new UnauthorizedException('Usuário e/ou senha invalidos')
         try {
             const user = await this.queryService.findByEmail(email)
-            const hashedPassword = await this.service.hashPassword(password)
-            if (!(await this.queryService.passwordIsMatch(hashedPassword, user.password))) {
+            if (!(await this.queryService.passwordIsMatch(password, user.password))) {
                 throw exception;
             }
-            return this.generateAccessToken({ email })
+            return this.generateAccessToken({ id: user.id, email })
         } catch (ex) {
             if (ex instanceof NotFoundException) {
                 throw exception

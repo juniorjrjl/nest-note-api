@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, HttpCode, Inject, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, HttpCode, Inject, Param, Post, Put, Request } from '@nestjs/common';
 import { StatusCodes } from 'http-status-codes';
 import { IUsersService } from 'src/services/users/iusers.service';
 import { LoginInfoRequest, LoginInfoResponse, UserChangePasswordRequest, UserInsertedResponse, UserInsertRequest, UserUpdatedResponse, UserUpdateRequest } from './users-model';
@@ -50,10 +50,10 @@ export class UsersController {
         description: 'user updated',
         type: UserUpdatedResponse
     })
-    @Put(':id')
+    @Put()
     @HttpCode(StatusCodes.OK)
-    public async update(@Param('id') id: string, @Body() body: UserUpdateRequest): Promise<UserUpdatedResponse> {
-        const dto = await this.service.update({ ...body, id })
+    public async update(@Request() request: Request, @Body() body: UserUpdateRequest): Promise<UserUpdatedResponse> {
+        const dto = await this.service.update({ ...body, id: request['user'].id })
         return this.mapping.toUserUpdatedResponse(dto)
     }
 

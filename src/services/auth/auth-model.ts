@@ -4,5 +4,6 @@ export interface JWTInfo {
 }
 
 export interface JWTTData {
+    id: string
     email: string
 }

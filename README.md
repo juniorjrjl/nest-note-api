@@ -28,3 +28,33 @@ inicie a aplicação
 ```
     docker-compose up --build
 ```
+
+## Debug via Docker
+
+1. usar o comando `yarn run start:debug:container` no arquivo `star.sh`
+
+2. no VSCode usar a seguinte configuração de running:
+
+```
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Attach to NestJS Docker",
+            "type": "node",
+            "request": "attach",
+            "address": "localhost",
+            "port": 9229,
+            "restart": true,
+            "timeout": 10000,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/nest-note-api",
+            "sourceMaps": true,
+        }
+    ]
+}
+```
+
+3. executar a aplicação via docker como explicado anteriormente
+
+4. executar o running configurado no VSCode, a partir desse ponto já é possível colocar os breakpoints e começar o debug.
