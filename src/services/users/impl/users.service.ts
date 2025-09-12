@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserInsert, UserInserted, UserUpdate, UserUpdated, UserUpdatePassword } from './../users-model';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from 'src/db/user.schema';
@@ -22,7 +22,9 @@ export class UsersService implements IUsersService {
         return document
     }
 
-    public async update({ id, ...props }: UserUpdate): Promise<UserUpdated> {
+    public async update({ id, ...props }: UserUpdate, tokenId: string): Promise<UserUpdated> {
+        if (id !== tokenId) throw new UnauthorizedException("Você não tem permissão para atualizar esse usuário");
+
         await this.queryService.findById(id)
         const document = await this.model.findOneAndUpdate(
             { _id: id },
@@ -44,7 +46,9 @@ export class UsersService implements IUsersService {
         )
     }
 
-    public async delete(id: string): Promise<void> {
+    public async delete(id: string, tokenId: string): Promise<void> {
+        if (id !== tokenId) throw new UnauthorizedException("Você não tem permissão para deletar esse usuário");
+
         await this.queryService.findById(id)
         await this.model.findByIdAndDelete(id)
     }

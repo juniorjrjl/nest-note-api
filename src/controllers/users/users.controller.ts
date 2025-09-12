@@ -50,10 +50,10 @@ export class UsersController {
         description: 'user updated',
         type: UserUpdatedResponse
     })
-    @Put()
+    @Put(':id')
     @HttpCode(StatusCodes.OK)
-    public async update(@Request() request: Request, @Body() body: UserUpdateRequest): Promise<UserUpdatedResponse> {
-        const dto = await this.service.update({ ...body, id: request['user'].id })
+    public async update(@Param('id') id: string, @Request() request: Request, @Body() body: UserUpdateRequest): Promise<UserUpdatedResponse> {
+        const dto = await this.service.update({ ...body, id: request['user'].id }, request['user'].id)
         return this.mapping.toUserUpdatedResponse(dto)
     }
 
@@ -73,8 +73,8 @@ export class UsersController {
     })
     @Delete(':id')
     @HttpCode(StatusCodes.NO_CONTENT)
-    public async delete(@Param('id') id: string): Promise<void> {
-        await this.service.delete(id)
+    public async delete(@Param('id') id: string, @Request() request: Request): Promise<void> {
+        await this.service.delete(id, request['user'].id)
     }
 
 }

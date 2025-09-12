@@ -8,7 +8,7 @@ import { userDetailFactory, userDocumentFactory, userInsertFactory, userUpdateFa
 import { User, UserDocument } from "src/db/user.schema";
 import { Model } from "mongoose";
 import { getModelToken } from "@nestjs/mongoose";
-import { NotFoundException } from "@nestjs/common";
+import { NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { InvalidPasswordException } from "src/services/users/users-exception";
 
 describe('usersService', () => {
@@ -54,7 +54,7 @@ describe('usersService', () => {
         queryServiceMock.findById!.mockResolvedValue(founded)
         userModelMock.findOneAndUpdate!.mockResolvedValue(updated)
 
-        await expect(service.update(noteUpdate)).resolves.not.toThrow()
+        await expect(service.update(noteUpdate, noteUpdate.id)).resolves.not.toThrow()
 
         expect(queryServiceMock.findById).toHaveBeenCalledWith(noteUpdate.id)
         expect(userModelMock.findOneAndUpdate).toHaveBeenCalledWith(
@@ -64,11 +64,23 @@ describe('usersService', () => {
         )
     })
 
+    it('when try update using different user id then throw error', async () => {
+        const noteUpdate = userUpdateFactory.build()
+        const founded = userDetailFactory.build()
+        const updated = userDocumentFactory.build() as UserDocument
+        queryServiceMock.findById!.mockResolvedValue(founded)
+        userModelMock.findOneAndUpdate!.mockResolvedValue(updated)
+
+        await expect(service.update(noteUpdate, new ObjectId().toHexString())).rejects.toThrow(UnauthorizedException)
+        expect(queryServiceMock.findById).not.toHaveBeenCalled()
+        expect(userModelMock.findOneAndUpdate).not.toHaveBeenCalled()
+    })
+
     it('when try update user not found then throw error', async () => {
         const noteUpdate = userUpdateFactory.build()
         queryServiceMock.findById!.mockRejectedValue(new NotFoundException(''))
 
-        await expect(service.update(noteUpdate)).rejects.toThrow(NotFoundException)
+        await expect(service.update(noteUpdate, noteUpdate.id)).rejects.toThrow(NotFoundException)
         expect(queryServiceMock.findById).toHaveBeenCalledWith(noteUpdate.id)
         expect(userModelMock.findOneAndUpdate).not.toHaveBeenCalled()
         expect(userModelMock.populate).not.toHaveBeenCalled()
@@ -115,16 +127,28 @@ describe('usersService', () => {
         queryServiceMock.findById!.mockResolvedValue(userDetail)
         userModelMock.findByIdAndDelete!.mockResolvedValue(undefined)
 
-        await expect(service.delete(id)).resolves.not.toThrow()
+        await expect(service.delete(id, id)).resolves.not.toThrow()
         expect(queryServiceMock.findById).toHaveBeenCalledWith(id)
         expect(userModelMock.findByIdAndDelete).toHaveBeenCalledWith(id)
+    })
+
+    it('when try to delete using different user id then throw error', async () => {
+        const id = new ObjectId().toHexString()
+        const differentId = new ObjectId().toHexString()
+        const userDetail = userDetailFactory.build()
+        queryServiceMock.findById!.mockResolvedValue(userDetail)
+        userModelMock.findByIdAndDelete!.mockResolvedValue(undefined)
+
+        await expect(service.delete(id, differentId)).rejects.toThrow(UnauthorizedException)
+        expect(queryServiceMock.findById).not.toHaveBeenCalledWith(id)
+        expect(userModelMock.findByIdAndDelete).not.toHaveBeenCalledWith(id)
     })
 
     it('when user not found then throw error', async () => {
         const id = new ObjectId().toHexString()
         queryServiceMock.findById!.mockRejectedValue(new NotFoundException(''))
 
-        await expect(service.delete(id)).rejects.toThrow(NotFoundException)
+        await expect(service.delete(id, id)).rejects.toThrow(NotFoundException)
         expect(queryServiceMock.findById).toHaveBeenCalledWith(id)
         expect(userModelMock.findByIdAndDelete).not.toHaveBeenCalled()
     })
