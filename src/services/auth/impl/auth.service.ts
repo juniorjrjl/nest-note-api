@@ -12,7 +12,7 @@ export class AuthService implements IAuthService {
     constructor(
         @Inject(USERS_SERVICE_TOKENS.QUERY_SERVICE) private readonly queryService: IUsersQueryService,
         private readonly jwtService: JwtService,
-        private configService: ConfigService
+        private readonly configService: ConfigService
     ) { }
 
     public async generateToken(email: string, password: string): Promise<JWTInfo> {
