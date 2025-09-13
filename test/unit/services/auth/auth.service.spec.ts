@@ -69,12 +69,17 @@ describe('authService', () => {
         const email = faker.internet.email()
         const password = faker.lorem.word()
         const storedUser = userDetailFactory.build()
-        const jwtSecret = faker.lorem.word()
+        const secret = faker.lorem.word()
+        const expiresIn = `${faker.number.int({ min: 1, max: 60 })}s`
         const token = faker.lorem.word()
 
         userQueryServiceMock.findByEmail!.mockResolvedValue(storedUser)
         userQueryServiceMock.passwordIsMatch!.mockResolvedValue(true)
-        configServiceMock.get!.mockReturnValue(jwtSecret as never)
+        configServiceMock.get!.mockImplementation((key: string) => {
+            if (key === 'JWT_SECRET_KEY') return secret as never
+            if (key === 'JWT_EXPIRES_IN') return expiresIn as never
+            return null as never
+        })
         jwtServiceMock.signAsync!.mockResolvedValue(token)
 
         const actual = await service.generateToken(email, password)
@@ -83,8 +88,9 @@ describe('authService', () => {
         expect(actual.accessTokenExpiresIn).not.toBeNull()
         expect(userQueryServiceMock.findByEmail).toHaveBeenCalledWith(email)
         expect(userQueryServiceMock.passwordIsMatch).toHaveBeenLastCalledWith(password, storedUser.password)
-        expect(configServiceMock.get).toHaveBeenCalledWith('JWT_SECRETE_KEY')
-        expect(jwtServiceMock.signAsync).toHaveBeenCalledWith({ email, id: storedUser.id }, { secret: jwtSecret, expiresIn: '120s' })
+        expect(configServiceMock.get).toHaveBeenCalledWith('JWT_SECRET_KEY')
+        expect(configServiceMock.get).toHaveBeenCalledWith('JWT_EXPIRES_IN')
+        expect(jwtServiceMock.signAsync).toHaveBeenCalledWith({ email, id: storedUser.id }, { secret, expiresIn })
 
     })
 

@@ -103,6 +103,26 @@ export class UserUpdatedResponse {
     }
 }
 
+export class UserFoundResponse {
+    @ApiProperty()
+    id: string
+    @ApiProperty()
+    name: string
+    @ApiProperty()
+    email: string
+    @ApiProperty()
+    createdAt: Date
+    @ApiProperty()
+    updatedAt: Date
+    constructor(id: string, name: string, email: string, createdAt: Date, updatedAt: Date) {
+        this.id = id
+        this.name = name
+        this.email = email
+        this.createdAt = createdAt
+        this.updatedAt = updatedAt
+    }
+}
+
 export class UserChangePasswordRequest {
     @ApiProperty()
     @IsEmail({}, { message: 'Informe um e-mail válido' })

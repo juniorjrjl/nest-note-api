@@ -34,7 +34,9 @@ export class AuthService implements IAuthService {
     private async generateAccessToken(jwtData: JWTTData): Promise<JWTInfo> {
         const expiresInMs = 120 * 1000
         const accessTokenExpiresIn = Date.now() + expiresInMs
-        const accessToken = await this.jwtService.signAsync({ ...jwtData }, { secret: this.configService.get<string>('JWT_SECRETE_KEY'), expiresIn: '120s' })
+        const accessToken = await this.jwtService.signAsync(
+            { ...jwtData },
+            { secret: this.configService.get<string>('JWT_SECRET_KEY'), expiresIn: this.configService.get<string>('JWT_EXPIRES_IN') })
         return {
             accessToken,
             accessTokenExpiresIn

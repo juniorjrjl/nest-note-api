@@ -9,7 +9,7 @@ import { userDocumentFactory } from "../../../bots/services/users-model.factory"
 import * as bcrypt from 'bcrypt';
 import { ObjectId } from "mongodb";
 import { faker } from "@faker-js/faker/.";
-import { NotFoundException } from "@nestjs/common";
+import { NotFoundException, UnauthorizedException } from "@nestjs/common";
 
 describe('UsersQueryService', () => {
     let queryService: IUsersQueryService
@@ -31,15 +31,23 @@ describe('UsersQueryService', () => {
     it('when user is stored and try find it by id then return it', async () => {
         const storedUser = userDocumentFactory.build() as IUser
         userModelMock.findById!.mockResolvedValue(storedUser as UserDocument)
-        const actual = await queryService.findById(storedUser.id)
+        const actual = await queryService.findById(storedUser.id, storedUser.id)
         expect(actual).toEqual(storedUser)
+        expect(userModelMock.findById).toHaveBeenCalledWith(storedUser.id);
+    })
+
+    it('when received ids is differents then throw error', async () => {
+        const storedUser = userDocumentFactory.build() as IUser
+        const anotherId = new ObjectId().toHexString()
+        userModelMock.findById!.mockResolvedValue(storedUser as UserDocument)
+        await expect(queryService.findById(storedUser.id, anotherId)).rejects.toThrow(UnauthorizedException)
         expect(userModelMock.findById).toHaveBeenCalledWith(storedUser.id);
     })
 
     it('when user isn`t stored and try find it by id  then throw error', async () => {
         const id = new ObjectId().toHexString()
         userModelMock.findById!.mockResolvedValue(undefined)
-        await expect(queryService.findById(id)).rejects.toThrow(NotFoundException)
+        await expect(queryService.findById(id, id)).rejects.toThrow(NotFoundException)
         expect(userModelMock.findById).toHaveBeenCalledWith(id);
     })
 

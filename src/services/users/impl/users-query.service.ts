@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from 'src/db/user.schema';
@@ -11,7 +11,9 @@ export class UsersQueryService implements IUsersQueryService {
 
     constructor(@InjectModel(User.name) private readonly model: Model<UserDocument>) { }
 
-    public async findById(id: string): Promise<UserDetail> {
+    public async findById(id: string, tokenId: string): Promise<UserDetail> {
+        if (id !== tokenId) throw new UnauthorizedException(`Você não tem permissão para visualizar esse usuário`);
+
         const document = await this.model.findById(id)
 
         if (!document) {

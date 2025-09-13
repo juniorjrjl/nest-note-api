@@ -8,7 +8,7 @@ import { ApiBearerAuth, ApiCreatedResponse, ApiOkResponse, ApiQuery } from '@nes
 import { NOTES_CONTROLLER_TOKENS } from './token/notes.token';
 import { INotesMapping } from './inotes-mapping';
 
-@Controller('notes')
+@Controller('author/:authorId/notes')
 export class NotesController {
 
     constructor(
@@ -24,8 +24,8 @@ export class NotesController {
     })
     @Post()
     @HttpCode(StatusCodes.CREATED)
-    public async insert(@Request() request: Request, @Body() body: NoteInsertRequest): Promise<NoteInsertedResponse> {
-        const dto = await this.service.insert({ ...body, author: request['user'].id })
+    public async insert(@Request() request: Request, @Param('authorId') authorId: string, @Body() body: NoteInsertRequest): Promise<NoteInsertedResponse> {
+        const dto = await this.service.insert({ ...body, author: request['user'].id }, authorId)
         return this.mapping.toNoteInsertedResponse(dto)
     }
 
@@ -36,8 +36,8 @@ export class NotesController {
     })
     @Put(':id')
     @HttpCode(StatusCodes.OK)
-    public async update(@Param('id') id: string, @Body() body: NoteUpdateRequest): Promise<NoteUpdatedResponse> {
-        const dto = await this.service.update({ ...body, id })
+    public async update(@Request() request: Request, @Param('id') id: string, @Param('authorId') authorId: string, @Body() body: NoteUpdateRequest): Promise<NoteUpdatedResponse> {
+        const dto = await this.service.update({ ...body, id, author: request['user'].id }, authorId)
         return this.mapping.toNoteUpdatedResponse(dto)
     }
 
@@ -47,8 +47,8 @@ export class NotesController {
     })
     @Delete(':id')
     @HttpCode(StatusCodes.NO_CONTENT)
-    public async delete(@Param('id') id: string): Promise<void> {
-        await this.service.delete(id)
+    public async delete(@Request() request: Request, @Param('authorId') authorId: string, @Param('id') id: string): Promise<void> {
+        await this.service.delete(id, authorId, request['user'].id)
     }
 
     @ApiBearerAuth()
@@ -64,8 +64,8 @@ export class NotesController {
         description: 'Filter notes by author',
         type: String,
     })
-    public async findByAuthorLikeText(@Request() request: Request, @Query('query') query: string): Promise<NoteAuthorListResponse[]> {
-        const dto = await this.queryService.findByAuthorAndLikeText(request['user'].id, query)
+    public async findByAuthorLikeText(@Request() request: Request, @Param('authorId') authorId: string, @Query('query') query: string): Promise<NoteAuthorListResponse[]> {
+        const dto = await this.queryService.findByAuthorAndLikeText(authorId, request['user'].id, query)
         return this.mapping.toNoteAuthorListResponse(dto)
     }
 
@@ -75,8 +75,8 @@ export class NotesController {
         type: NoteDetailResponse,
     })
     @Get(':id')
-    public async findById(@Param('id') id: string): Promise<NoteDetailResponse> {
-        const dto = await this.queryService.findById(id)
+    public async findById(@Request() request: Request, @Param('authorId') authorId: string, @Param('id') id: string): Promise<NoteDetailResponse> {
+        const dto = await this.queryService.findById(id, authorId, request['user'].id)
         return this.mapping.toNoteDetailResponse(dto)
     }
 

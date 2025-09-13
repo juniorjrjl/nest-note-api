@@ -15,7 +15,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     ) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            secretOrKey: configService.get<string>('JWT_SECRETE_KEY'),
+            secretOrKey: configService.get<string>('JWT_SECRET_KEY'),
             passReqToCallback: true
         })
     }

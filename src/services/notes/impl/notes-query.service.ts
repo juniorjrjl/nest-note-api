@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Note, NoteDocument } from 'src/db/note.schema';
@@ -10,13 +10,17 @@ export class NotesQueryService implements INotesQueryService {
 
     constructor(@InjectModel(Note.name) private readonly model: Model<NoteDocument>) { }
 
-    public async findByAuthorAndLikeText(author: string, query?: string): Promise<NoteAuthorList[]> {
+    public async findByAuthorAndLikeText(author: string, tokenId: string, query?: string): Promise<NoteAuthorList[]> {
+        this.validateAuthor(author, tokenId, "Você não tem permissão para acessar as notas de outro autor");
+
         return query ? (await this.model.find({ author })
             .find({ $text: { $search: query } })) :
             (await this.model.find({ author }))
     }
 
-    public async findById(id: string): Promise<NoteDetail> {
+    public async findById(id: string, authorId: string, tokenId: string): Promise<NoteDetail> {
+        this.validateAuthor(authorId, tokenId, "Você não tem permissão para acessar as notas de outro autor");
+
         const document = await this.model.findById(id)
 
         if (!document) {
@@ -24,6 +28,10 @@ export class NotesQueryService implements INotesQueryService {
         }
 
         return document
+    }
+
+    private validateAuthor(id: string, tokenId: string, errorMessage: string): void {
+        if (id !== tokenId) throw new UnauthorizedException(errorMessage);
     }
 
 }

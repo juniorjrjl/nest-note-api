@@ -56,7 +56,7 @@ describe('usersService', () => {
 
         await expect(service.update(noteUpdate, noteUpdate.id)).resolves.not.toThrow()
 
-        expect(queryServiceMock.findById).toHaveBeenCalledWith(noteUpdate.id)
+        expect(queryServiceMock.findById).toHaveBeenCalledWith(noteUpdate.id, noteUpdate.id)
         expect(userModelMock.findOneAndUpdate).toHaveBeenCalledWith(
             { _id: id },
             { $set: { ...propsToUpdate } },
@@ -81,7 +81,7 @@ describe('usersService', () => {
         queryServiceMock.findById!.mockRejectedValue(new NotFoundException(''))
 
         await expect(service.update(noteUpdate, noteUpdate.id)).rejects.toThrow(NotFoundException)
-        expect(queryServiceMock.findById).toHaveBeenCalledWith(noteUpdate.id)
+        expect(queryServiceMock.findById).toHaveBeenCalledWith(noteUpdate.id, noteUpdate.id)
         expect(userModelMock.findOneAndUpdate).not.toHaveBeenCalled()
         expect(userModelMock.populate).not.toHaveBeenCalled()
     })
@@ -128,7 +128,7 @@ describe('usersService', () => {
         userModelMock.findByIdAndDelete!.mockResolvedValue(undefined)
 
         await expect(service.delete(id, id)).resolves.not.toThrow()
-        expect(queryServiceMock.findById).toHaveBeenCalledWith(id)
+        expect(queryServiceMock.findById).toHaveBeenCalledWith(id, id)
         expect(userModelMock.findByIdAndDelete).toHaveBeenCalledWith(id)
     })
 
@@ -149,7 +149,7 @@ describe('usersService', () => {
         queryServiceMock.findById!.mockRejectedValue(new NotFoundException(''))
 
         await expect(service.delete(id, id)).rejects.toThrow(NotFoundException)
-        expect(queryServiceMock.findById).toHaveBeenCalledWith(id)
+        expect(queryServiceMock.findById).toHaveBeenCalledWith(id, id)
         expect(userModelMock.findByIdAndDelete).not.toHaveBeenCalled()
     })
 

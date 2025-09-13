@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Note, NoteDocument } from 'src/db/note.schema';
@@ -18,8 +18,10 @@ export class NotesService implements INotesService {
         @Inject(NOTES_SERVICE_TOKENS.QUERY_SERVICE) private readonly queryService: INotesQueryService
     ) { }
 
-    public async insert(dto: NoteInsert): Promise<NoteInserted> {
-        const author = await this.userQueryService.findById(dto.author)
+    public async insert(dto: NoteInsert, authorId: string): Promise<NoteInserted> {
+        this.validateAuthor(dto.author, authorId, "Você não tem permissão para criar uma nota para outro autor");
+
+        const author = await this.userQueryService.findById(dto.author, authorId)
         const document = await this.model.create({ ...dto })
         return {
             id: document.id,
@@ -34,8 +36,10 @@ export class NotesService implements INotesService {
         }
     }
 
-    public async update(dto: NoteUpdate): Promise<NoteUpdated> {
-        await this.queryService.findById(dto.id)
+    public async update(dto: NoteUpdate, authorId: string): Promise<NoteUpdated> {
+        this.validateAuthor(dto.author, authorId, "Você não tem permissão para atualizar uma nota de outro autor");
+
+        await this.queryService.findById(dto.id, dto.author, authorId)
         const { id, ...props } = dto
         const document = await this.model.findOneAndUpdate(
             { _id: id },
@@ -55,9 +59,15 @@ export class NotesService implements INotesService {
         }
     }
 
-    public async delete(id: string): Promise<void> {
-        await this.queryService.findById(id)
+    public async delete(id: string, authorId: string, tokenId: string): Promise<void> {
+        this.validateAuthor(authorId, tokenId, "Você não tem permissão para excluir uma nota de outro autor");
+
+        await this.queryService.findById(id, authorId, tokenId)
         await this.model.findByIdAndDelete(id)
+    }
+
+    private validateAuthor(id: string, tokenId: string, errorMessage: string): void {
+        if (id !== tokenId) throw new UnauthorizedException(errorMessage);
     }
 
 }

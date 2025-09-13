@@ -25,7 +25,7 @@ export class UsersService implements IUsersService {
     public async update({ id, ...props }: UserUpdate, tokenId: string): Promise<UserUpdated> {
         if (id !== tokenId) throw new UnauthorizedException("Você não tem permissão para atualizar esse usuário");
 
-        await this.queryService.findById(id)
+        await this.queryService.findById(id, tokenId)
         const document = await this.model.findOneAndUpdate(
             { _id: id },
             { $set: props },
@@ -49,7 +49,7 @@ export class UsersService implements IUsersService {
     public async delete(id: string, tokenId: string): Promise<void> {
         if (id !== tokenId) throw new UnauthorizedException("Você não tem permissão para deletar esse usuário");
 
-        await this.queryService.findById(id)
+        await this.queryService.findById(id, tokenId)
         await this.model.findByIdAndDelete(id)
     }
 

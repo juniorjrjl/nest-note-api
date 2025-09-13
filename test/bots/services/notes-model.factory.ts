@@ -20,7 +20,8 @@ export const noteDocumentFactory = Factory.makeFactory<INoteFactory>({
 export const noteUpdateFactory = Factory.makeFactory<NoteUpdate>({
     id: new ObjectId().toHexString(),
     title: faker.lorem.word(),
-    body: faker.lorem.word()
+    body: faker.lorem.word(),
+    author: new ObjectId().toHexString()
 })
 
 export const noteUpdatedFactory = Factory.makeFactory<NoteUpdated>({

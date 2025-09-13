@@ -24,7 +24,7 @@ export class AuthGuard implements CanActivate {
             throw new UnauthorizedException("Para realizar essa operação é necessario estar logado");
         }
         try {
-            const payload = await this.jwtService.verifyAsync(token, { secret: this.configService.get<string>('JWT_SECRETE_KEY') })
+            const payload = await this.jwtService.verifyAsync(token, { secret: this.configService.get<string>('JWT_SECRET_KEY') })
             request['user'] = payload
         } catch {
             throw new UnauthorizedException("Para realizar essa operação é necessario estar logado");

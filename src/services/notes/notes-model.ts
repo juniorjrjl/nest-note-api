@@ -42,7 +42,7 @@ export interface NoteUpdate {
     id: string
     title: string
     body: string
-
+    author: string
 }
 
 export interface NoteUpdated {
