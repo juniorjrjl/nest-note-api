@@ -5,12 +5,6 @@ import { UserDetail, UserInsert, UserUpdate, UserUpdatePassword } from "src/serv
 import { IUser } from "src/db/user.schema";
 import { Document } from "mongoose";
 
-export const usersUpdateFactory = Factory.makeFactory<UserUpdate>({
-    id: new ObjectId().toHexString(),
-    name: faker.lorem.word(),
-    email: faker.internet.email()
-})
-
 export type IUserFactory = Omit<IUser | 'id' | '_id', keyof Document>;
 
 export const userDocumentFactory = Factory.makeFactory<IUserFactory>({
@@ -34,9 +28,10 @@ export const userDetailFactory = Factory.makeFactory<UserDetail>({
 
 export const userUpdateFactory = Factory.makeFactory<UserUpdate>({
     id: new ObjectId().toHexString(),
+    tokenId: "",
     name: faker.lorem.word(),
     email: faker.internet.email()
-})
+}).withDerivation('tokenId', u => u.id)
 
 export const userInsertFactory = Factory.makeFactory<UserInsert>({
     name: faker.lorem.word(),
@@ -45,7 +40,8 @@ export const userInsertFactory = Factory.makeFactory<UserInsert>({
 })
 
 export const userUpdatePasswordFactory = Factory.makeFactory<UserUpdatePassword>({
-    email: faker.internet.email(),
+    id: new ObjectId().toHexString(),
+    tokenId: "",
     oldPassword: faker.lorem.word(),
     newPassword: faker.lorem.word()
-})
+}).withDerivation('tokenId', u => u.id)

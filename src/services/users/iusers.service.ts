@@ -4,7 +4,7 @@ export interface IUsersService {
 
     insert(dto: UserInsert): Promise<UserInserted>
 
-    update(dto: UserUpdate, tokenId: string): Promise<UserUpdated>
+    update(dto: UserUpdate): Promise<UserUpdated>
 
     changePassword(dto: UserUpdatePassword): Promise<void>
 

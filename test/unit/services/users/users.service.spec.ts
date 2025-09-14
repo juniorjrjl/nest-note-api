@@ -49,12 +49,12 @@ describe('usersService', () => {
     it('when try update stored user then return it', async () => {
         const noteUpdate = userUpdateFactory.build()
         const founded = userDetailFactory.build()
-        const { id, ...propsToUpdate } = noteUpdate
+        const { id, tokenId, ...propsToUpdate } = noteUpdate
         const updated = userDocumentFactory.build() as UserDocument
         queryServiceMock.findById!.mockResolvedValue(founded)
         userModelMock.findOneAndUpdate!.mockResolvedValue(updated)
 
-        await expect(service.update(noteUpdate, noteUpdate.id)).resolves.not.toThrow()
+        await expect(service.update(noteUpdate)).resolves.not.toThrow()
 
         expect(queryServiceMock.findById).toHaveBeenCalledWith(noteUpdate.id, noteUpdate.id)
         expect(userModelMock.findOneAndUpdate).toHaveBeenCalledWith(
@@ -65,13 +65,13 @@ describe('usersService', () => {
     })
 
     it('when try update using different user id then throw error', async () => {
-        const noteUpdate = userUpdateFactory.build()
+        const noteUpdate = userUpdateFactory.build({ tokenId: new ObjectId().toHexString() })
         const founded = userDetailFactory.build()
         const updated = userDocumentFactory.build() as UserDocument
         queryServiceMock.findById!.mockResolvedValue(founded)
         userModelMock.findOneAndUpdate!.mockResolvedValue(updated)
 
-        await expect(service.update(noteUpdate, new ObjectId().toHexString())).rejects.toThrow(UnauthorizedException)
+        await expect(service.update(noteUpdate)).rejects.toThrow(UnauthorizedException)
         expect(queryServiceMock.findById).not.toHaveBeenCalled()
         expect(userModelMock.findOneAndUpdate).not.toHaveBeenCalled()
     })
@@ -80,7 +80,7 @@ describe('usersService', () => {
         const noteUpdate = userUpdateFactory.build()
         queryServiceMock.findById!.mockRejectedValue(new NotFoundException(''))
 
-        await expect(service.update(noteUpdate, noteUpdate.id)).rejects.toThrow(NotFoundException)
+        await expect(service.update(noteUpdate)).rejects.toThrow(NotFoundException)
         expect(queryServiceMock.findById).toHaveBeenCalledWith(noteUpdate.id, noteUpdate.id)
         expect(userModelMock.findOneAndUpdate).not.toHaveBeenCalled()
         expect(userModelMock.populate).not.toHaveBeenCalled()
@@ -90,34 +90,42 @@ describe('usersService', () => {
         const changePassword = userUpdatePasswordFactory.build()
         const founded = userDetailFactory.build({ password: changePassword.oldPassword })
 
-        queryServiceMock.findByEmail!.mockResolvedValue(founded)
+        queryServiceMock.findById!.mockResolvedValue(founded)
         queryServiceMock.passwordIsMatch!.mockResolvedValue(true)
         userModelMock.findOneAndUpdate!.mockResolvedValue(undefined)
 
         await expect(service.changePassword(changePassword)).resolves.not.toThrow()
-        expect(queryServiceMock.findByEmail).toHaveBeenLastCalledWith(changePassword.email)
+        expect(queryServiceMock.findById).toHaveBeenLastCalledWith(changePassword.id, changePassword.tokenId)
         expect(queryServiceMock.passwordIsMatch).toHaveBeenLastCalledWith(changePassword.oldPassword, founded.password)
+    })
+
+    it('when send different ids then throw error', async () => {
+        const changePassword = userUpdatePasswordFactory.build({ tokenId: new ObjectId().toHexString() })
+
+        await expect(service.changePassword(changePassword)).rejects.toThrow(UnauthorizedException)
+        expect(queryServiceMock.findById).not.toHaveBeenLastCalledWith()
+        expect(queryServiceMock.passwordIsMatch).not.toHaveBeenLastCalledWith()
     })
 
     it('when send incorrect old password then throw error', async () => {
         const changePassword = userUpdatePasswordFactory.build()
         const founded = userDetailFactory.build({ password: changePassword.oldPassword })
 
-        queryServiceMock.findByEmail!.mockResolvedValue(founded)
+        queryServiceMock.findById!.mockResolvedValue(founded)
         queryServiceMock.passwordIsMatch!.mockResolvedValue(false)
 
         await expect(service.changePassword(changePassword)).rejects.toThrow(InvalidPasswordException)
-        expect(queryServiceMock.findByEmail).toHaveBeenCalledWith(changePassword.email)
+        expect(queryServiceMock.findById).toHaveBeenLastCalledWith(changePassword.id, changePassword.tokenId)
         expect(queryServiceMock.passwordIsMatch).toHaveBeenCalledWith(changePassword.oldPassword, founded.password)
     })
 
     it('when user not found then throw error', async () => {
         const changePassword = userUpdatePasswordFactory.build()
 
-        queryServiceMock.findByEmail!.mockRejectedValue(new NotFoundException(''))
+        queryServiceMock.findById!.mockRejectedValue(new NotFoundException(''))
 
         await expect(service.changePassword(changePassword)).rejects.toThrow(NotFoundException)
-        expect(queryServiceMock.findByEmail).toHaveBeenLastCalledWith(changePassword.email)
+        expect(queryServiceMock.findById).toHaveBeenLastCalledWith(changePassword.id, changePassword.tokenId)
         expect(queryServiceMock.passwordIsMatch).not.toHaveBeenCalled()
     })
 

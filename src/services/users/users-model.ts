@@ -22,7 +22,8 @@ export interface UserInserted {
 }
 
 export interface UserUpdate {
-    id: string
+    id: string;
+    tokenId: string
     name: string;
     email: string;
 }
@@ -41,7 +42,8 @@ export interface UserUpdated {
 }
 
 export interface UserUpdatePassword {
-    email: string;
+    id: string;
+    tokenId: string;
     oldPassword: string;
     newPassword: string;
 }

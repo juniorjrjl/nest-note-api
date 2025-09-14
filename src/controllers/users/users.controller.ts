@@ -55,7 +55,7 @@ export class UsersController {
     @Put(':id')
     @HttpCode(StatusCodes.OK)
     public async update(@Param('id') id: string, @Request() request: Request, @Body() body: UserUpdateRequest): Promise<UserUpdatedResponse> {
-        const dto = await this.service.update({ ...body, id: request['user'].id }, request['user'].id)
+        const dto = await this.service.update({ ...body, id: id, tokenId: request['user'].id })
         return this.mapping.toUserUpdatedResponse(dto)
     }
 
@@ -63,10 +63,10 @@ export class UsersController {
     @ApiNoContentResponse({
         description: 'Password changed'
     })
-    @Put('password/change')
+    @Put(':id/password/change')
     @HttpCode(StatusCodes.NO_CONTENT)
-    public async changePassword(@Body() body: UserChangePasswordRequest) {
-        await this.service.changePassword(body)
+    public async changePassword(@Param('id') id: string, @Request() request: Request, @Body() body: UserChangePasswordRequest) {
+        await this.service.changePassword({ ...body, id, tokenId: request['user'].id })
     }
 
     @ApiBearerAuth()

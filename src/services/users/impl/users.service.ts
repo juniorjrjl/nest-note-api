@@ -22,7 +22,7 @@ export class UsersService implements IUsersService {
         return document
     }
 
-    public async update({ id, ...props }: UserUpdate, tokenId: string): Promise<UserUpdated> {
+    public async update({ id, tokenId, ...props }: UserUpdate): Promise<UserUpdated> {
         if (id !== tokenId) throw new UnauthorizedException("Você não tem permissão para atualizar esse usuário");
 
         await this.queryService.findById(id, tokenId)
@@ -35,13 +35,15 @@ export class UsersService implements IUsersService {
     }
 
     public async changePassword(dto: UserUpdatePassword): Promise<void> {
-        const user = await this.queryService.findByEmail(dto.email)
+        if (dto.id !== dto.tokenId) throw new UnauthorizedException(`Você não tem permissão para alterar a senha desse usuário`);
+
+        const user = await this.queryService.findById(dto.id, dto.tokenId)
         if (!await this.queryService.passwordIsMatch(dto.oldPassword, user.password)) {
             throw new InvalidPasswordException("A senha informada não corresponde com a senha do usuário")
         }
 
         await this.model.findOneAndUpdate(
-            { email: dto.email },
+            { _id: dto.id },
             { $set: { password: await this.hashPassword(dto.newPassword) } }
         )
     }

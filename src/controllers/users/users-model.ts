@@ -125,26 +125,21 @@ export class UserFoundResponse {
 
 export class UserChangePasswordRequest {
     @ApiProperty()
-    @IsEmail({}, { message: 'Informe um e-mail válido' })
-    @IsNotEmpty({ message: 'Informe um e-mail válido' })
-    email: string
-    @ApiProperty()
     @IsNotEmpty({ message: 'Informe uma senha válida' })
     @Length(5, Number.MAX_VALUE, { message: ({ constraints }) => `A senha deve ter no mínimo ${constraints[0]} caracteres` })
-    @IsPasswordsMatch('confirmOldPassword', { message: 'Os campos de senha e confirmação de senha estão diferentes' })
     oldPassword: string
     @ApiProperty()
     @IsNotEmpty({ message: 'Informe uma senha válida' })
     @Length(5, Number.MAX_VALUE, { message: ({ constraints }) => `A senha deve ter no mínimo ${constraints[0]} caracteres` })
-    confirmOldPassword: string
+    @IsPasswordsMatch('newPassword', { message: 'Os campos de senha e confirmação de senha estão diferentes' })
+    confirmPassword: string
     @ApiProperty()
     @IsNotEmpty({ message: 'Informe uma senha válida' })
     @Length(5, Number.MAX_VALUE, { message: ({ constraints }) => `A senha deve ter no mínimo ${constraints[0]} caracteres` })
     newPassword: string
-    constructor(email: string, oldPassword: string, confirmOldPassword: string, newPassword: string) {
-        this.email = email
+    constructor(oldPassword: string, confirmPassword: string, newPassword: string) {
         this.oldPassword = oldPassword
-        this.confirmOldPassword = confirmOldPassword
+        this.confirmPassword = confirmPassword
         this.newPassword = newPassword
     }
 }
