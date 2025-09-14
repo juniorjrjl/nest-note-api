@@ -71,7 +71,7 @@ export class UserInsertedResponse {
 export class UserUpdateRequest {
     @ApiProperty()
     @IsNotEmpty({ message: 'Informe um nome válido' })
-    @Length(5, 100, { message: ({ constraints }) => `O nome deve ter entre ${constraints[0]} e ${constraints[1]} caracteres` })
+    @Length(2, 100, { message: ({ constraints }) => `O nome deve ter entre ${constraints[0]} e ${constraints[1]} caracteres` })
     name: string
     @ApiProperty()
     @IsEmail({}, { message: 'Informe um e-mail válido' })
